@@ -14,6 +14,101 @@ public abstract class StringUtils {
 
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
+    public static String trimAllWhitespace(String str) {
+        if (!hasLength(str)) {
+            return str;
+        } else {
+            int len = str.length();
+            StringBuilder sb = new StringBuilder(str.length());
+
+            for(int i = 0; i < len; ++i) {
+                char c = str.charAt(i);
+                if (!Character.isWhitespace(c)) {
+                    sb.append(c);
+                }
+            }
+
+            return sb.toString();
+        }
+    }
+
+    public static TimeZone parseTimeZoneString(String timeZoneString) {
+        TimeZone timeZone = TimeZone.getTimeZone(timeZoneString);
+        if ("GMT".equals(timeZone.getID()) && !timeZoneString.startsWith("GMT")) {
+            throw new IllegalArgumentException("Invalid time zone specification '" + timeZoneString + "'");
+        } else {
+            return timeZone;
+        }
+    }
+
+    @Nullable
+    public static Locale parseLocaleString(String localeString) {
+        return parseLocaleTokens(localeString, tokenizeLocaleSource(localeString));
+    }
+    private static String[] tokenizeLocaleSource(String localeSource) {
+        return tokenizeToStringArray(localeSource, "_ ", false, false);
+    }
+
+    @Nullable
+    private static Locale parseLocaleTokens(String localeString, String[] tokens) {
+        String language = tokens.length > 0 ? tokens[0] : "";
+        String country = tokens.length > 1 ? tokens[1] : "";
+        validateLocalePart(language);
+        validateLocalePart(country);
+        String variant = "";
+        if (tokens.length > 2) {
+            int endIndexOfCountryCode = localeString.indexOf(country, language.length()) + country.length();
+            variant = trimLeadingWhitespace(localeString.substring(endIndexOfCountryCode));
+            if (variant.startsWith("_")) {
+                variant = trimLeadingCharacter(variant, '_');
+            }
+        }
+
+        if (variant.isEmpty() && country.startsWith("#")) {
+            variant = country;
+            country = "";
+        }
+
+        return language.length() > 0 ? new Locale(language, country, variant) : null;
+    }
+
+    public static String trimLeadingWhitespace(String str) {
+        if (!hasLength(str)) {
+            return str;
+        } else {
+            StringBuilder sb = new StringBuilder(str);
+
+            while(sb.length() > 0 && Character.isWhitespace(sb.charAt(0))) {
+                sb.deleteCharAt(0);
+            }
+
+            return sb.toString();
+        }
+    }
+
+    private static void validateLocalePart(String localePart) {
+        for(int i = 0; i < localePart.length(); ++i) {
+            char ch = localePart.charAt(i);
+            if (ch != ' ' && ch != '_' && ch != '-' && ch != '#' && !Character.isLetterOrDigit(ch)) {
+                throw new IllegalArgumentException("Locale part \"" + localePart + "\" contains invalid characters");
+            }
+        }
+
+    }
+    public static String trimLeadingCharacter(String str, char leadingCharacter) {
+        if (!hasLength(str)) {
+            return str;
+        } else {
+            StringBuilder sb = new StringBuilder(str);
+
+            while(sb.length() > 0 && sb.charAt(0) == leadingCharacter) {
+                sb.deleteCharAt(0);
+            }
+
+            return sb.toString();
+        }
+    }
+
     public static boolean hasLength(@Nullable String str) {
         return str != null && !str.isEmpty();
     }
@@ -296,6 +391,24 @@ public abstract class StringUtils {
                 chars[0] = updatedChar;
                 return new String(chars, 0, chars.length);
             }
+        }
+    }
+    public static String collectionToCommaDelimitedString(@Nullable Collection<?> coll) {
+        return collectionToDelimitedString(coll, ",");
+    }
+
+    public static String[] trimArrayElements(String[] array) {
+        if (ObjectUtils.isEmpty(array)) {
+            return array;
+        } else {
+            String[] result = new String[array.length];
+
+            for(int i = 0; i < array.length; ++i) {
+                String element = array[i];
+                result[i] = element != null ? element.trim() : null;
+            }
+
+            return result;
         }
     }
 }

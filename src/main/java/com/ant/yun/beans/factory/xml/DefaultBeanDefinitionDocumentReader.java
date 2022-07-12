@@ -130,8 +130,14 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
         if (!StringUtils.hasText(location)) {
             this.getReaderContext().error("Resource location must not be empty", ele);
         } else {
+            // 解析系统属性，格式如 ："${user.dir}"
+            // Resolve system properties: e.g. "${user.dir}"
             location = this.getReaderContext().getEnvironment().resolveRequiredPlaceholders(location);
+
+            // 实际 Resource 集合，即 import 的地址，有哪些 Resource 资源
             Set<Resource> actualResources = new LinkedHashSet(4);
+
+            // 判断 location 是相对路径还是绝对路径
             boolean absoluteLocation = false;
 
             try {
@@ -151,11 +157,14 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
                 }
             } else {
                 try {
+                    // 创建相对地址的 Resource
                     Resource relativeResource = this.getReaderContext().getResource().createRelative(location);
                     if (relativeResource.exists()) {
                         importCount = this.getReaderContext().getReader().loadBeanDefinitions(relativeResource);
                         actualResources.add(relativeResource);
                     } else {
+                        // 不存在
+                        // 获得根路径地址
                         String baseLocation = this.getReaderContext().getResource().getURL().toString();
                         importCount = this.getReaderContext().getReader().loadBeanDefinitions(StringUtils.applyRelativePath(baseLocation, location), actualResources);
                     }

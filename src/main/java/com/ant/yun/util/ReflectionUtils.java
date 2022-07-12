@@ -23,6 +23,11 @@ public abstract class ReflectionUtils {
 
     private static final Method[] EMPTY_METHOD_ARRAY = new Method[0];
 
+    public static <T> Constructor<T> accessibleConstructor(Class<T> clazz, Class<?>... parameterTypes) throws NoSuchMethodException {
+        Constructor<T> ctor = clazz.getDeclaredConstructor(parameterTypes);
+        makeAccessible(ctor);
+        return ctor;
+    }
 
     @Nullable
     public static Object invokeMethod(Method method, @Nullable Object target) {

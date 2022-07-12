@@ -4,6 +4,7 @@ import com.ant.yun.lang.Nullable;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -22,7 +23,30 @@ public abstract class ClassUtils {
     private static final Map<String, Class<?>> primitiveTypeNameMap = new HashMap(32);
     private static final Map<String, Class<?>> commonClassCache = new HashMap(64);
 
+    @Nullable
+    public static String getDescriptiveType(@Nullable Object value) {
+        if (value == null) {
+            return null;
+        } else {
+            Class<?> clazz = value.getClass();
+            if (Proxy.isProxyClass(clazz)) {
+                StringBuilder result = new StringBuilder(clazz.getName());
+                result.append(" implementing ");
+                Class<?>[] ifcs = clazz.getInterfaces();
 
+                for(int i = 0; i < ifcs.length; ++i) {
+                    result.append(ifcs[i].getName());
+                    if (i < ifcs.length - 1) {
+                        result.append(',');
+                    }
+                }
+
+                return result.toString();
+            } else {
+                return clazz.getTypeName();
+            }
+        }
+    }
 
     public static boolean isAssignableValue(Class<?> type, @Nullable Object value) {
         Assert.notNull(type, "Type must not be null");
@@ -181,5 +205,20 @@ public abstract class ClassUtils {
         }
 
         return count;
+    }
+    public static Class<?> resolveClassName(String className, @Nullable ClassLoader classLoader) throws IllegalArgumentException {
+        try {
+            return forName(className, classLoader);
+        } catch (IllegalAccessError var3) {
+            throw new IllegalStateException("Readability mismatch in inheritance hierarchy of class [" + className + "]: " + var3.getMessage(), var3);
+        } catch (LinkageError var4) {
+            throw new IllegalArgumentException("Unresolvable class definition for class [" + className + "]", var4);
+        } catch (ClassNotFoundException var5) {
+            throw new IllegalArgumentException("Could not find class [" + className + "]", var5);
+        }
+    }
+    public static String getQualifiedName(Class<?> clazz) {
+        Assert.notNull(clazz, "Class must not be null");
+        return clazz.getTypeName();
     }
 }
