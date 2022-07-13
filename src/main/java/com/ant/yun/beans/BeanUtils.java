@@ -126,26 +126,26 @@ public abstract class BeanUtils {
         }
 
         public static <T> T instantiateClass(Constructor<T> ctor, Object... args) throws IllegalAccessException, InvocationTargetException, InstantiationException {
-//            KFunction<T> kotlinConstructor = ReflectJvmMapping.getKotlinFunction(ctor);
-//            if (kotlinConstructor == null) {
-//                return ctor.newInstance(args);
-//            } else {
-//                if (!Modifier.isPublic(ctor.getModifiers()) || !Modifier.isPublic(ctor.getDeclaringClass().getModifiers())) {
-//                    KCallablesJvm.setAccessible(kotlinConstructor, true);
-//                }
-//
-//                List<KParameter> parameters = kotlinConstructor.getParameters();
-//                Map<KParameter, Object> argParameters = new HashMap(parameters.size());
-//                Assert.isTrue(args.length <= parameters.size(), "Number of provided arguments should be less of equals than number of constructor parameters");
-//
-//                for(int i = 0; i < args.length; ++i) {
-//                    if (!((KParameter)parameters.get(i)).isOptional() || args[i] != null) {
-//                        argParameters.put(parameters.get(i), args[i]);
-//                    }
-//                }
-//
-//                return kotlinConstructor.callBy(argParameters);
-//            }
+            KFunction<T> kotlinConstructor = ReflectJvmMapping.getKotlinFunction(ctor);
+            if (kotlinConstructor == null) {
+                return ctor.newInstance(args);
+            } else {
+                if (!Modifier.isPublic(ctor.getModifiers()) || !Modifier.isPublic(ctor.getDeclaringClass().getModifiers())) {
+                    KCallablesJvm.setAccessible(kotlinConstructor, true);
+                }
+
+                List<KParameter> parameters = kotlinConstructor.getParameters();
+                Map<KParameter, Object> argParameters = new HashMap(parameters.size());
+                Assert.isTrue(args.length <= parameters.size(), "Number of provided arguments should be less of equals than number of constructor parameters");
+
+                for(int i = 0; i < args.length; ++i) {
+                    if (!((KParameter)parameters.get(i)).isOptional() || args[i] != null) {
+                        argParameters.put(parameters.get(i), args[i]);
+                    }
+                }
+
+                return kotlinConstructor.callBy(argParameters);
+            }
             return null;
         }
     }
